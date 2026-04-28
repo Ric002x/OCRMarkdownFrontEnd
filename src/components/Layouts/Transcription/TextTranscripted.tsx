@@ -3,7 +3,6 @@
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useFileStore } from "@/src/lib/stores/file.store";
-import { executeOCR } from "@/src/services/ocrExe";
 import { FilePen, NotebookPen, RefreshCcw, Triangle } from "lucide-react";
 import { toast } from "sonner";
 
@@ -59,24 +58,28 @@ export const TextTranscripted = ({ classname }: { classname: string }) => {
             setTranscription(ret.data.text)
             setIsLoading(false)
             setShowViewer(false)
+            setIsTranscripted(true)
         } else {
-
-
             try {
-                const response: any = await executeOCR(file, transcriptTo);
+                const formData = new FormData();
+                formData.append("file", file);
 
-                if (response.status === "success" && response.data) {
-                    if (response.status === 'success' && response.data) {
-                        setTranscription(response.data);
-                        setIsTranscripted(true)
-                        setLastEdit(new Date())
-                        setShowViewer(true)
-                    } else if (response.status === 'error') {
-                        toast.error(response.message || 'Unknown error');
-                    }
+                const response = await fetch('http://localhost:8000/ocr', {
+                    method: "POST",
+                    body: formData
+                })
+
+                if (!response.ok) {
+                    toast.error('Erro ao enviar arquivo. ' + "Erro: " + response.status);
                 }
+
+                const data = await response.json()
+                setTranscription(data.content);
+                setIsTranscripted(true)
+                setLastEdit(new Date())
+                setShowViewer(true)
             } catch (err) {
-                toast.error(err instanceof Error ? err.message : 'Erro ao processar arquivo');
+
             } finally {
                 setIsLoading(false);
             }
