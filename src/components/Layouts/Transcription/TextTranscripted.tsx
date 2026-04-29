@@ -64,7 +64,7 @@ export const TextTranscripted = ({ classname }: { classname: string }) => {
                 const formData = new FormData();
                 formData.append("file", file);
 
-                const response = await fetch('ocrmarkdownbackend.railway.internal/ocr', {
+                const response = await fetch('https://ocrmarkdownbackend-production.up.railway.app/ocr', {
                     method: "POST",
                     body: formData
                 })
